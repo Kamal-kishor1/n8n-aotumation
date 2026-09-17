@@ -1,0 +1,24 @@
+Save the screenshots using the exact filenames listed in README.md.
+
+01-workflow-overview.png
+02-form-trigger.png
+03-form-output.png
+04-date-time-node.png
+05-employee-sheet.png
+06-get-employee-row.png
+07-leave-balance-if.png
+08-insufficient-balance-email.png
+09-approval-email.png
+10-smtp-credential.png
+11-wait-node.png
+12-wait-webhook-output.png
+13-manager-decision-if.png
+14-update-leave-balance.png
+15-approved-email.png
+16-rejected-email.png
+17-google-sheet-updated.png
+18-approved-execution.png
+19-rejected-execution.png
+20-insufficient-balance-execution.png
+21-email-success.png
+22-final-workflow.png

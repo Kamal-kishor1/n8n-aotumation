@@ -1,0 +1,530 @@
+{
+  "name": "Project 01 - Leave Request",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Leave Request",
+        "formDescription": "Submit a request for leave",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Employee ID"
+            },
+            {
+              "fieldLabel": "Employee Name"
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "Leave Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "a"
+                  },
+                  {
+                    "option": "b"
+                  },
+                  {
+                    "option": "c"
+                  },
+                  {
+                    "option": "d"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Start Date",
+              "fieldType": "date"
+            },
+            {
+              "fieldLabel": "End Date",
+              "fieldType": "date"
+            },
+            {
+              "fieldLabel": "Reason",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "90cee39b-53b9-47c6-97d8-b371ff671471",
+      "name": "On form submission",
+      "webhookId": "1eda5946-e16d-424d-86ae-0d9c96ac3ab6"
+    },
+    {
+      "parameters": {
+        "operation": "getTimeBetweenDates",
+        "startDate": "={{ $json[\"Start Date\"] }}",
+        "endDate": "={{ $json[\"End Date\"] }}",
+        "outputFieldName": "leaveDays",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "7dbab322-d46c-42a6-8cde-33ae4b821505",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "19TsQ9QDmkDvS0liH2x9JsfklcxYUpUatPMVXwkPkmUI",
+          "mode": "list",
+          "cachedResultName": "Project 01 - Leave Management",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19TsQ9QDmkDvS0liH2x9JsfklcxYUpUatPMVXwkPkmUI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Employees",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19TsQ9QDmkDvS0liH2x9JsfklcxYUpUatPMVXwkPkmUI/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Employee ID",
+              "lookupValue": "={{ $('On form submission').item.json[\"Employee ID\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        0
+      ],
+      "id": "4ad206ae-0e84-4761-a328-ef5c9ebe527d",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5fjM5ehdrpa1mYWA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "aceeb27f-caaa-42af-a40f-6e44369947a4",
+              "leftValue": "={{ $json['Leave Balance'] }}",
+              "rightValue": "={{ $('Date & Time').item.json.leaveDays.days }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        0
+      ],
+      "id": "311d8c89-ceb1-49dd-bcd0-1b4ebf19d3c1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1072,
+        -128
+      ],
+      "id": "5ec44dbd-767b-46cc-85db-a83b6a16bba1",
+      "name": "Wait",
+      "webhookId": "d9070f9a-4be1-4f4b-a8b1-84b506baf72c"
+    },
+    {
+      "parameters": {
+        "fromEmail": "john750wick030@gmail.com",
+        "toEmail": "={{ $('On form submission').item.json.Email }}",
+        "subject": "=Leave Request Approval - {{ $('On form submission').item.json['Employee Name'] }}",
+        "html": "=<h3>Leave Request Approval</h3>\n\n<p><strong>Employee:</strong> {{ $('On form submission').item.json['Employee Name'] }}</p>\n<p><strong>Leave Type:</strong> {{ $('On form submission').item.json['Leave Type'] }}</p>\n<p><strong>Start Date:</strong> {{ $('On form submission').item.json['Start Date'] }}</p>\n<p><strong>End Date:</strong> {{ $('On form submission').item.json['End Date'] }}</p>\n<p><strong>Reason:</strong> {{ $('On form submission').item.json['Reason'] }}</p>\n\n<p>\n<a href=\"{{ $execution.resumeUrl }}?approved=true\">Approve</a>\n</p>\n\n<p>\n<a href=\"{{ $execution.resumeUrl }}?approved=false\">Reject</a>\n</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        896,
+        -128
+      ],
+      "id": "3cba65eb-d78c-4213-a973-8685b8b8e0f3",
+      "name": "Send an Email",
+      "webhookId": "8660f5c5-ff6c-4833-997e-19414e9b1987",
+      "credentials": {
+        "smtp": {
+          "id": "ti2cQtCKcBLKNA7J",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ca020050-2ff7-417f-922a-a9678cb9146d",
+              "leftValue": "={{ $json.query.approved }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1296,
+        -128
+      ],
+      "id": "572642ec-f7db-4a31-85d4-f89f41b39798",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "19TsQ9QDmkDvS0liH2x9JsfklcxYUpUatPMVXwkPkmUI",
+          "mode": "list",
+          "cachedResultName": "Project 01 - Leave Management",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19TsQ9QDmkDvS0liH2x9JsfklcxYUpUatPMVXwkPkmUI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Employees",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19TsQ9QDmkDvS0liH2x9JsfklcxYUpUatPMVXwkPkmUI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Leave Balance": "={{ Number($('Get row(s) in sheet').item.json['Leave Balance']) - Number($('Date & Time').item.json.leaveDays.days) }}",
+            "Employee ID": "={{ $('On form submission').item.json['Employee ID'] }}"
+          },
+          "matchingColumns": [
+            "Employee ID"
+          ],
+          "schema": [
+            {
+              "id": "Employee ID",
+              "displayName": "Employee ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Employee Name",
+              "displayName": "Employee Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Department",
+              "displayName": "Department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Leave Balance",
+              "displayName": "Leave Balance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1520,
+        -224
+      ],
+      "id": "bfe96d00-d4d7-429a-a848-a8b2089145fe",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5fjM5ehdrpa1mYWA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "john750wick030@gmail.com",
+        "toEmail": "={{ $('On form submission').item.json['Email'] }}",
+        "subject": "Leave Request Approved - {{ $('On form submission').item.json['Employee Name'] }}",
+        "html": "=<h3>Leave Request Approved</h3>\n\n<p>Hello {{ $('On form submission').item.json['Employee Name'] }},</p>\n\n<p>Your leave request has been approved.</p>\n\n<p><strong>Leave Type:</strong> {{ $('On form submission').item.json['Leave Type'] }}</p>\n<p><strong>Start Date:</strong> {{ $('On form submission').item.json['Start Date'] }}</p>\n<p><strong>End Date:</strong> {{ $('On form submission').item.json['End Date'] }}</p>\n<p><strong>Days:</strong> {{ $('Date & Time').item.json.leaveDays.days }}</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1744,
+        -224
+      ],
+      "id": "a58e7e65-af04-462a-ad74-058d63501acf",
+      "name": "Send an Email1",
+      "webhookId": "f252ccce-269c-48ec-af3b-1f731d644a83",
+      "credentials": {
+        "smtp": {
+          "id": "ti2cQtCKcBLKNA7J",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "john750wick030@gmail.com",
+        "toEmail": "={{ $('On form submission').item.json['Email'] }}",
+        "subject": "Leave Request Rejected - {{ $('On form submission').item.json['Employee Name'] }}",
+        "html": "=<h3>Leave Request Rejected</h3>\n\n<p>Hello {{ $('On form submission').item.json['Employee Name'] }},</p>\n\n<p>Your leave request has been rejected by the manager.</p>\n\n<p>\n<strong>Leave Type:</strong> {{ $('On form submission').item.json['Leave Type'] }}<br>\n<strong>From:</strong> {{ $('On form submission').item.json['From Date'] }}<br>\n<strong>To:</strong> {{ $('On form submission').item.json['To Date'] }}<br>\n<strong>Days:</strong> {{ $('On form submission').item.json['Number of Days'] }}\n</p>\n\n<p><strong>Status:</strong> Rejected</p>\n\n<p>Reason: Your manager rejected the leave request.</p>\n\n<p>Please contact your manager if you need further information.</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1520,
+        -32
+      ],
+      "id": "0e0af350-e709-4071-86d2-5631c026fd4c",
+      "name": "Send an Email2",
+      "webhookId": "382813f8-19e0-4283-8ed8-f2044d1b1ea4",
+      "credentials": {
+        "smtp": {
+          "id": "ti2cQtCKcBLKNA7J",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "john750wick030@gmail.com",
+        "toEmail": "={{ $('On form submission').item.json['Email'] }}",
+        "subject": "Leave Request Rejected - Insufficient Leave Balance",
+        "html": "=<h3>Leave Request Rejected</h3>\n\n<p>Hello {{ $('On form submission').item.json['Employee Name'] }},</p>\n\n<p>Your leave request has been rejected because you do not have sufficient leave balance.</p>\n\n<p>\n<strong>Requested Leave:</strong> {{ $('On form submission').item.json['Number of Days'] }} days<br>\n<strong>Available Leave Balance:</strong> {{ $('Get row(s) in sheet').item.json['Leave Balance'] }} days\n</p>\n\n<p><strong>Status:</strong> Rejected</p>\n\n<p><strong>Reason:</strong> Insufficient leave balance.</p>\n\n<p>Please submit a new request within your available leave balance.</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        896,
+        48
+      ],
+      "id": "38c2fdf9-28ce-4204-84a0-6c6d3ef2f44e",
+      "name": "Send an Email3",
+      "webhookId": "b1b071d9-12a9-461c-8f81-5c65e342de78",
+      "credentials": {
+        "smtp": {
+          "id": "ti2cQtCKcBLKNA7J",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send an Email3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an Email": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send an Email2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send an Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "9ca86572-32de-4613-9c09-d901ea1d7d3a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "25ca25387a92c816f40e3912a720ad0eb15367d1058c8a1fac5b6fa936ac9abc"
+  },
+  "nodeGroups": [],
+  "id": "EwHDmtGOWPz12gku",
+  "tags": []
+}

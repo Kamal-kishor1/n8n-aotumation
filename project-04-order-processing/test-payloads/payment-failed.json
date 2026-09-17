@@ -1,0 +1,10 @@
+{
+  "event": "payment.failed",
+  "payment_id": "pay_test_fail_001",
+  "payment_status": "failed",
+  "amount": 2999,
+  "email": "customer@example.com",
+  "payment_link_id": "plink_TEST_FAIL",
+  "order_id": "ORD-TEST-002",
+  "payment_method": "upi"
+}

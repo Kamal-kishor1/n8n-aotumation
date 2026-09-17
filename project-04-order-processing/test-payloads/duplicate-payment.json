@@ -1,0 +1,9 @@
+{
+  "event": "payment_link.paid",
+  "payment_id": "pay_test_001",
+  "payment_status": "captured",
+  "amount": 15000,
+  "email": "customer@example.com",
+  "payment_link_id": "plink_TEST_SUCCESS",
+  "order_id": "ORD-TEST-001"
+}

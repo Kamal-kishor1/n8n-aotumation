@@ -1,0 +1,198 @@
+{
+  "name": "Project2_Manager_Approval_Response",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "expense-approval-response",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "547dbee5-3bee-46cc-a825-244368ba8368",
+      "name": "Webhook",
+      "webhookId": "1eb3571f-5937-4825-915b-4483f48c3718"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0d62b3c0-ba29-4be8-8c26-48e67490bfdd",
+              "leftValue": "={{ $json.body.decision }}",
+              "rightValue": "APPROVED",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "b55f5fa7-6b7d-447b-b5c4-e6294cdf2d62",
+      "name": "Decision Check"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE expenses\nSET\n    status = 'APPROVED',\n    approved_by = $2,\n    approval_type = 'MANAGER'\nWHERE id = $1\nRETURNING *;",
+        "options": {
+          "queryReplacement": "=[ {{$json.body.expense_id}}, {{$json.body.manager_name}} ]"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "1898b5ae-ecec-42b3-9a2b-7a3e88cc5854",
+      "name": "Approve Expense",
+      "credentials": {
+        "postgres": {
+          "id": "4GNKxM5WecFaFHJS",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE expenses\nSET\n    status = 'REJECTED',\n    approved_by = $2,\n    approval_type = 'MANAGER',\n    rejection_reason = $3\nWHERE id = $1\nRETURNING *;",
+        "options": {
+          "queryReplacement": "=[{{ $json.body.expense_id }}, {{$json.body.manager_name}}, {{$json.body.comment}} ]"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        448,
+        96
+      ],
+      "id": "4354c036-2445-4846-b31c-d34467b2e0c2",
+      "name": "Reject Expense",
+      "credentials": {
+        "postgres": {
+          "id": "4GNKxM5WecFaFHJS",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"message\": \"Expense approved successfully\",\n  \"expense_id\": \"{{$json.id}}\",\n  \"status\": \"APPROVED\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "8fdc4072-f6d6-44cd-aef0-cfdbe58245b8",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"message\": \"Expense rejected successfully\",\n  \"expense_id\": \"{{$json.id}}\",\n  \"status\": \"REJECTED\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        96
+      ],
+      "id": "3ad6ec93-e4b6-45c7-b56c-dd5dba026e80",
+      "name": "Respond to Webhook1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Decision Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decision Check": {
+      "main": [
+        [
+          {
+            "node": "Approve Expense",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Expense",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve Expense": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject Expense": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "20e97758-249d-40a0-bde3-1fd153f436ce",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "25ca25387a92c816f40e3912a720ad0eb15367d1058c8a1fac5b6fa936ac9abc"
+  },
+  "nodeGroups": [],
+  "id": "goixHasPSmFLFg0W",
+  "tags": []
+}

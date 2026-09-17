@@ -1,0 +1,340 @@
+{
+  "name": "Project2_Expense_Professional",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1g7FBvI2krV3_Hq_oS8Nb6dhRFyKLHyeOyeG73Vu6ChQ",
+          "mode": "list",
+          "cachedResultName": "Expense Approval Responses",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g7FBvI2krV3_Hq_oS8Nb6dhRFyKLHyeOyeG73Vu6ChQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 42586803,
+          "mode": "list",
+          "cachedResultName": "Form responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g7FBvI2krV3_Hq_oS8Nb6dhRFyKLHyeOyeG73Vu6ChQ/edit#gid=42586803"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "093aecf4-951f-4ff0-bd1c-8ffa6121b025",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "fc5HBZMO4nUecZRD",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "db893549-93ef-4953-88a6-82b92f250ac7",
+              "name": "employee_name",
+              "value": "={{ $json[\"Employee Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "b41888b6-f1d9-4146-8894-80ce93757948",
+              "name": "department",
+              "value": "={{ $json.Department }}",
+              "type": "string"
+            },
+            {
+              "id": "d316e09b-aa36-4a02-8ce0-8c70db48ed17",
+              "name": "expense_type",
+              "value": "={{ $json[\"Expense Type\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "aed151b8-88a7-4d92-b9d5-9731e6fdac8c",
+              "name": "amount",
+              "value": "={{ $json.Amount }}",
+              "type": "string"
+            },
+            {
+              "id": "260e8f53-8d2c-409e-bbbe-d8387f2f2b33",
+              "name": "description",
+              "value": "={{ $json.Description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "c5616225-69f0-47f0-89a0-8547af0ba08d",
+      "name": "Normalize Expense Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ecdb8a03-c99e-49e0-9003-c4a769ec39f6",
+              "leftValue": "={{ $json.employee_name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "ba7fbda8-650f-4481-a5c9-d61ea1176fa7",
+      "name": "Validation Node"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO expenses\n(\n    employee_name,\n    department,\n    expense_type,\n    amount,\n    description,\n    status,\n    approval_type,\n    approved_by\n)\nVALUES\n(\n    $1,\n    $2,\n    $3,\n    $4,\n    $5,\n    'SUBMITTED',\n    'PENDING',\n    NULL\n)\nRETURNING *;",
+        "options": {
+          "queryReplacement": "=[\n{{$json.employee_name}},\n{{$json.department}},\n{{$json.expense_type}},\n{{$json.amount}},\n{{$json.description}}\n]"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        640,
+        -96
+      ],
+      "id": "2a3f3a81-9e83-43b2-928c-3e26edcc96c7",
+      "name": "Create Expense Record",
+      "credentials": {
+        "postgres": {
+          "id": "4GNKxM5WecFaFHJS",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fb08c012-4296-417e-9215-d56897f4ab25",
+              "leftValue": "={{Number($json.amount)}}",
+              "rightValue": 5000,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        848,
+        -96
+      ],
+      "id": "68c51a5b-43a1-4a13-8d11-f57bd8f06bb8",
+      "name": "Expense Amount Check"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE expenses\nSET\n    status = 'APPROVED',\n    approval_type = 'AUTOMATIC',\n    approved_by = 'SYSTEM'\nWHERE id = $1\nRETURNING *;",
+        "options": {
+          "queryReplacement": "=[ {{$json.id}} ]"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1072,
+        16
+      ],
+      "id": "dc3c9b6b-1fb4-4dd6-8be9-3444438189f3",
+      "name": "Auto Approve Expense",
+      "credentials": {
+        "postgres": {
+          "id": "4GNKxM5WecFaFHJS",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE expenses\nSET\n    status = 'PENDING_MANAGER_APPROVAL',\n    approval_type = 'MANAGER'\nWHERE id = $1\nRETURNING *;",
+        "options": {
+          "queryReplacement": "=[ {{$json.id}} ]"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1072,
+        -208
+      ],
+      "id": "2f6839e5-0605-4953-8035-6a8564b15279",
+      "name": "Send For Manager Approval",
+      "credentials": {
+        "postgres": {
+          "id": "4GNKxM5WecFaFHJS",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "text": "=Expense Approval Required  Employee: {{$json.employee_name}}  Department: {{$json.department}}  Expense Type: {{$json.expense_type}}  Amount: ₹{{$json.amount}}  Description: {{$json.description}}  Status: {{$json.status}}  Approval Type: {{$json.approval_type}}  Please review this expense request.",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.6,
+      "position": [
+        1296,
+        -208
+      ],
+      "id": "bc93cd7c-f5d8-4276-9873-d07698eefedd",
+      "name": "Approval Engine",
+      "webhookId": "a94eec4d-0997-49ec-ae01-ab9054ec6873"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize Expense Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Expense Data": {
+      "main": [
+        [
+          {
+            "node": "Validation Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validation Node": {
+      "main": [
+        [
+          {
+            "node": "Create Expense Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Expense Record": {
+      "main": [
+        [
+          {
+            "node": "Expense Amount Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expense Amount Check": {
+      "main": [
+        [
+          {
+            "node": "Send For Manager Approval",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Auto Approve Expense",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send For Manager Approval": {
+      "main": [
+        [
+          {
+            "node": "Approval Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e5972639-97bf-430f-b017-8390b420c59e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "25ca25387a92c816f40e3912a720ad0eb15367d1058c8a1fac5b6fa936ac9abc"
+  },
+  "nodeGroups": [],
+  "id": "XEtIZHUKunt0R1gJ",
+  "tags": []
+}

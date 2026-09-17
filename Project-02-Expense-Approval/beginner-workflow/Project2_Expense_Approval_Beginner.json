@@ -1,0 +1,850 @@
+{
+  "name": "Project2_Expense_Approval_Beginner",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "expense-request",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0c2c38bd-f0d5-4bae-9ba6-a8c7a3e86295",
+      "name": "Webhook",
+      "webhookId": "58fe35fc-d9aa-4b03-a08e-80657918e5dd"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0af094af-249a-435f-aedd-0a7306ff08c0",
+              "leftValue": "={{ $json.body.employee }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f6a1863f-d20a-440d-82bd-cf25ace7c2b2",
+              "leftValue": "={{ $json.body.amount }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "74b149fd-0825-4971-837c-2699a2d9a80a",
+              "leftValue": "={{ $json.body.amount }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "ce9cd6c9-1954-418f-827a-707633cab0a5",
+      "name": "Validate Expense"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9466f62d-0854-44d3-8605-4ec68c947907",
+              "leftValue": "={{ $json.body.amount }}",
+              "rightValue": 5000,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        -112
+      ],
+      "id": "0bd44475-544d-4bc8-800f-bfb166dee7ed",
+      "name": "Amount Check"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2505f20c-2c79-40b5-b538-97b5de4ca118",
+              "name": "status",
+              "value": "Approved",
+              "type": "string"
+            },
+            {
+              "id": "61564f25-3409-41bb-82db-d8372b61a66f",
+              "name": "approved_by",
+              "value": "n8n Automation",
+              "type": "string"
+            },
+            {
+              "id": "c3cbcbed-019c-4ae5-a14f-8c2a05a54b1f",
+              "name": "approval_type",
+              "value": "Automatic",
+              "type": "string"
+            },
+            {
+              "id": "e53020d6-70d7-42ca-8e7f-1b37b0aaaddb",
+              "name": "validation_status",
+              "value": "Passed",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        640,
+        -192
+      ],
+      "id": "efd97663-1b21-4d00-a9f0-150642220cf6",
+      "name": "Auto Approve"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2945650f-9a96-4f75-b0f4-d42931fac402",
+              "name": "status",
+              "value": "Pending Manager Approval",
+              "type": "string"
+            },
+            {
+              "id": "db7c4264-14fb-4756-a802-785425f237ed",
+              "name": "approval_type",
+              "value": "Manager",
+              "type": "string"
+            },
+            {
+              "id": "a2c5ee1f-ac28-45d1-883b-68b65cd1f890",
+              "name": "approved_by",
+              "value": "Pending",
+              "type": "string"
+            },
+            {
+              "id": "e1015ec4-e2ae-4233-8200-0ab294645d5a",
+              "name": "validation_status",
+              "value": "Passed",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        640,
+        -16
+      ],
+      "id": "60dd69da-6785-4834-88b5-abd0fd4a2ac8",
+      "name": "Manager Approval"
+    },
+    {
+      "parameters": {
+        "sendTo": "john750wick030@gmail.com",
+        "subject": "Expense Approval Required",
+        "emailType": "text",
+        "message": "=Expense Approval Required  Employee: {{ $json.body.employee }} Department: {{$json.body.department}} Expense Type: {{$json.body.expense_type}} Amount: ₹{{$json.body.amount}} Description: {{$json.body.description}}  Status: Pending Manager Approval  Please review this expense request.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        -16
+      ],
+      "id": "13828aa2-829b-40a0-b8e1-d2e053739269",
+      "name": "Send Manager Approval Email",
+      "webhookId": "f38d030a-6d79-4c26-b8a7-732e2015501c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "OcHlSiDm0KcvfsR4",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kkS5fV6Dodqp8VxNgh5eklc4czoTqZHCG4mnaI4G2cQ",
+          "mode": "list",
+          "cachedResultName": "Project2_Expense_Approval",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kkS5fV6Dodqp8VxNgh5eklc4czoTqZHCG4mnaI4G2cQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Expense Records",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kkS5fV6Dodqp8VxNgh5eklc4czoTqZHCG4mnaI4G2cQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "employee": "={{ $json.body.employee }}",
+            "department": "={{ $json.body.department }}",
+            "expense_type": "={{ $json.body.expense_type }}",
+            "description": "={{ $json.body.description }}",
+            "amount": "={{ $json.body.amount }}",
+            "status": "={{$json.status}}",
+            "approved_by": "={{$json.approved_by}}",
+            "approval_type": "={{$json.approval_type}}",
+            "created_at": "={{ $now }}",
+            "validation_status": "={{ $json.validation_status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "employee",
+              "displayName": "employee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "department",
+              "displayName": "department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "expense_type",
+              "displayName": "expense_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "amount",
+              "displayName": "amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approved_by",
+              "displayName": "approved_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approval_type",
+              "displayName": "approval_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Rejection_reason",
+              "displayName": "Rejection_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "validation_status",
+              "displayName": "validation_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        -192
+      ],
+      "id": "383ccacf-7a7c-4aa3-8b7b-d52274f02371",
+      "name": "Project2_Expense_Approval",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5fjM5ehdrpa1mYWA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kkS5fV6Dodqp8VxNgh5eklc4czoTqZHCG4mnaI4G2cQ",
+          "mode": "list",
+          "cachedResultName": "Project2_Expense_Approval",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kkS5fV6Dodqp8VxNgh5eklc4czoTqZHCG4mnaI4G2cQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Expense Records",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kkS5fV6Dodqp8VxNgh5eklc4czoTqZHCG4mnaI4G2cQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "employee": "={{ $('Manager Approval').item.json.body.employee }}",
+            "department": "={{ $('Manager Approval').item.json.body.department }}",
+            "expense_type": "={{ $('Manager Approval').item.json.body.expense_type }}",
+            "amount": "={{ $('Manager Approval').item.json.body.amount }}",
+            "description": "={{ $('Manager Approval').item.json.body.description }}",
+            "status": "={{ $('Manager Approval').item.json.status }}",
+            "approved_by": "={{ $('Manager Approval').item.json.approved_by }}",
+            "approval_type": "={{ $('Manager Approval').item.json.approval_type }}",
+            "created_at": "={{ $now }}",
+            "validation_status": "={{ $('Manager Approval').item.json.validation_status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "employee",
+              "displayName": "employee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "department",
+              "displayName": "department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "expense_type",
+              "displayName": "expense_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "amount",
+              "displayName": "amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approved_by",
+              "displayName": "approved_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approval_type",
+              "displayName": "approval_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Rejection_reason",
+              "displayName": "Rejection_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "validation_status",
+              "displayName": "validation_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1088,
+        -16
+      ],
+      "id": "892f946f-8dab-46ed-9d72-3a12394b9a82",
+      "name": "Project2_Expense_Approval1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5fjM5ehdrpa1mYWA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "54d45a5b-6069-4554-ae02-240eb546e8de",
+              "name": "status",
+              "value": "Rejected",
+              "type": "string"
+            },
+            {
+              "id": "d6422574-7bec-4aad-b01e-476e825247c6",
+              "name": "rejection_reason",
+              "value": "Invalid expense data",
+              "type": "string"
+            },
+            {
+              "id": "31949f04-bf18-4155-8a21-38c53ef13f7e",
+              "name": "validation_status",
+              "value": "Failed",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        432,
+        160
+      ],
+      "id": "767d76c8-2ae2-4431-88ff-225cdaa0b95e",
+      "name": "Reject Invalid Expense"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kkS5fV6Dodqp8VxNgh5eklc4czoTqZHCG4mnaI4G2cQ",
+          "mode": "list",
+          "cachedResultName": "Project2_Expense_Approval",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kkS5fV6Dodqp8VxNgh5eklc4czoTqZHCG4mnaI4G2cQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Expense Records",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kkS5fV6Dodqp8VxNgh5eklc4czoTqZHCG4mnaI4G2cQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "department": "={{ $json.body.department }}",
+            "expense_type": "={{ $json.body.expense_type }}",
+            "amount": "={{ $json.body.amount }}",
+            "description": "={{ $json.body.description }}",
+            "status": "={{ $json.status }}",
+            "approved_by": "=",
+            "Rejection_reason": "={{ $json.rejection_reason }}",
+            "created_at": "={{ $now }}",
+            "validation_status": "={{ $json.validation_status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "employee",
+              "displayName": "employee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "department",
+              "displayName": "department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "expense_type",
+              "displayName": "expense_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "amount",
+              "displayName": "amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approved_by",
+              "displayName": "approved_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approval_type",
+              "displayName": "approval_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Rejection_reason",
+              "displayName": "Rejection_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "validation_status",
+              "displayName": "validation_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        656,
+        160
+      ],
+      "id": "432dfc05-df01-42b4-9718-2f8a0b508481",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5fjM5ehdrpa1mYWA",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Expense",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Expense": {
+      "main": [
+        [
+          {
+            "node": "Amount Check",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Invalid Expense",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Amount Check": {
+      "main": [
+        [
+          {
+            "node": "Auto Approve",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Manager Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manager Approval": {
+      "main": [
+        [
+          {
+            "node": "Send Manager Approval Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto Approve": {
+      "main": [
+        [
+          {
+            "node": "Project2_Expense_Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Manager Approval Email": {
+      "main": [
+        [
+          {
+            "node": "Project2_Expense_Approval1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject Invalid Expense": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "906f460e-f4e3-4ab0-a37b-9d961bdd4e7c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "25ca25387a92c816f40e3912a720ad0eb15367d1058c8a1fac5b6fa936ac9abc"
+  },
+  "nodeGroups": [],
+  "id": "CSjow5fmQITNUVjp",
+  "tags": []
+}

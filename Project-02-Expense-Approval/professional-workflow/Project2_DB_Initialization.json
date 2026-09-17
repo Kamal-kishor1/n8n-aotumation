@@ -1,0 +1,83 @@
+{
+  "name": "Project2_DB_Initialization",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -32
+      ],
+      "id": "36e1dca6-e071-4dcb-9118-83eb1e74cb57",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS expenses (\n    id SERIAL PRIMARY KEY,\n    employee_name VARCHAR(100) NOT NULL,\n    department VARCHAR(100),\n    expense_type VARCHAR(100),\n    amount DECIMAL(10,2) NOT NULL,\n    description TEXT,\n    status VARCHAR(50),\n    approval_type VARCHAR(50),\n    approved_by VARCHAR(100),\n    rejection_reason TEXT,\n    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);\n\n\nCREATE TABLE IF NOT EXISTS approvals (\n    id SERIAL PRIMARY KEY,\n    expense_id INTEGER REFERENCES expenses(id),\n    manager_name VARCHAR(100),\n    decision VARCHAR(50),\n    comment TEXT,\n    approved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        624,
+        -32
+      ],
+      "id": "6abf4fd5-f724-4816-922a-d6b94bb48e00",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "4GNKxM5WecFaFHJS",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Postgres\n**This node is used for creating a tables for the workflow**"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        448,
+        -256
+      ],
+      "id": "e29ff906-5e16-440d-99cf-fe6f4ff40110",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ec4b1630-ee93-4702-b365-55622170c9fa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "25ca25387a92c816f40e3912a720ad0eb15367d1058c8a1fac5b6fa936ac9abc"
+  },
+  "nodeGroups": [],
+  "id": "5aDSRX2QSSGPH771",
+  "tags": []
+}

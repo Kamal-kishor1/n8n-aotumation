@@ -1,0 +1,7 @@
+# n8n Workflow Export
+
+Export the completed n8n workflow from the n8n UI and save the exported JSON in this folder as:
+
+`project-5-it-incident-automation.json`
+
+Do not manually replace the exported workflow with this placeholder.

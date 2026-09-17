@@ -1,0 +1,9 @@
+# Architecture Diagram Placeholder
+
+Create or export the final architecture diagram here as:
+
+`architecture-diagram.png`
+
+Recommended flow:
+
+System Alert → Webhook → Create Incident → Determine Severity → Assign Team → Resolve → Verify → Close/Reopen
